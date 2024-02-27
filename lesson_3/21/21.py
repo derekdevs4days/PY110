@@ -1,4 +1,5 @@
 import random
+import os
 import pprint
 
 def valid_input(input):
@@ -19,6 +20,9 @@ def set_user_bankroll(human_dict):
     
     human_dict['bankroll'] = int(money)
 
+def display_bankroll(human_dict):
+    print(f'Your current bankroll is {human_dict['bankroll']}')
+
 
 def get_bet(human_dict):
     amount = input('How much would you like to bet for this hand? ')
@@ -28,6 +32,10 @@ def get_bet(human_dict):
         amount = input()
 
     human_dict['bet_amount'] = int(amount)
+
+
+def display_bet(human_dict):
+    print(f'The current bet is ${human_dict['bet_amount']}')
 
 
 def get_available_cards(deck):
@@ -171,7 +179,7 @@ def game():
     }
 
     set_user_bankroll(HUMAN)
-
+    os.system('clear')
     while HUMAN['bankroll'] > 0:
         get_bet(HUMAN)
         initial_deal(DECK, HUMAN, DEALER)
@@ -182,8 +190,21 @@ def game():
         display_hand_value(HUMAN)
 
         while True:
+            print('')
+            hit_stay = input('Hit or Stay? ').lower().strip()
+            while hit_stay not in ('hit', 'stay'):
+                hit_stay = input('Hit or Stay? ').lower().strip()
             
-        pprint.pprint(HUMAN)
+            if hit_stay == 'stay':
+                break
+            os.system('clear')
+            deal_card(DECK, HUMAN)
+            display_bet(HUMAN)
+            display_dealer_up_card(DEALER)
+            update_hand_value(HUMAN)
+            display_hand(HUMAN)
+            display_hand_value(HUMAN)
+
 
 
 
