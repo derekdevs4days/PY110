@@ -13,6 +13,15 @@ def valid_input(input):
     return value > 0
 
 
+def valid_bet(input, max_bet):
+    try:
+        value = int(input)
+    except ValueError:
+        return False
+    
+    return 0 < value <= max_bet
+
+
 def set_user_bankroll(human_dict):
     money = input('How much money are you playing with? ')
 
@@ -24,18 +33,22 @@ def set_user_bankroll(human_dict):
     human_dict['current_bankroll'] = int(money)
 
 
-def display_bankroll(human_dict):
-    print(f'Your current bankroll is ${human_dict['current_bankroll']}')
-
-
 def get_bet(human_dict):
     amount = input('How much would you like to bet for this hand? ')
+    max_bet = human_dict['current_bankroll']
 
-    while not valid_input(amount):
-        print('Please enter the amount you would like to bet.')
+    while not valid_bet(amount, max_bet):
+        if not valid_input(amount):
+            print('Please enter a valid amount to bet.')
+        else:
+            print(f'Please enter an amount up to your current bankroll: ${max_bet}')
         amount = input()
 
     human_dict['bet_amount'] = int(amount)
+
+
+def display_bankroll(human_dict):
+    print(f'Your current bankroll is ${human_dict['current_bankroll']}')
 
 
 def display_bet(human_dict):
@@ -236,7 +249,6 @@ def game():
             print('')
             deal_card(DECK, HUMAN)
             display_dealer_up_card(DEALER)
-            delay(0.65)
             update_hand_value(HUMAN)
             display_hand(HUMAN)
             display_hand_value(HUMAN)
@@ -245,16 +257,14 @@ def game():
                 print('')
                 print('Over 21!!!')
                 print(f'You loss ${HUMAN["bet_amount"]}')
-                print('')
                 HUMAN['current_bankroll'] -= HUMAN['bet_amount']
+                display_bankroll(HUMAN)
                 break
         
         while True:
             if bust(HUMAN) or DEALER['hand_value'] >= 17:
-                print('Dealer stays.')
                 break
             
-            delay(.65)
             os.system('clear')
             display_bankroll(HUMAN)
             display_bet(HUMAN)
@@ -266,9 +276,7 @@ def game():
 
             deal_card(DECK,DEALER)
             update_hand_value(DEALER)
-            display_hand(DEALER)
-            display_hand_value(DEALER)
-
+        
             if bust(DEALER):
                 print('')
                 print('Dealer busts!')
@@ -279,15 +287,21 @@ def game():
         print('')
         display_hand(DEALER)
         display_hand_value(DEALER)
-        if HUMAN['hand_value'] > DEALER['hand_value']:
-            HUMAN['current_bankroll'] += HUMAN['bet_amount']
-            print(f'You won ${HUMAN["bet_amount"]}')
-            display_bankroll(HUMAN)
-        else:
-            print(f'You loss ${HUMAN["bet_amount"]}')
-            HUMAN['current_bankroll'] -= HUMAN['bet_amount']
-            display_bankroll(HUMAN)
+        print('')
+        
+        if not bust(HUMAN) and not bust(DEALER):
 
+            if HUMAN['hand_value'] > DEALER['hand_value']:
+                HUMAN['current_bankroll'] += HUMAN['bet_amount']
+                print(f'You won ${HUMAN["bet_amount"]}')
+                display_bankroll(HUMAN)
+            elif HUMAN['hand_value'] <  DEALER['hand_value']:
+                print(f'You lose ${HUMAN["bet_amount"]}')
+                HUMAN['current_bankroll'] -= HUMAN['bet_amount']
+                display_bankroll(HUMAN)
+            else:
+                print('It is a push')
+                display_bankroll(HUMAN)
 
 
         print('')
@@ -302,8 +316,9 @@ def game():
         
         clear_hands(HUMAN, DEALER)
         reset_deck(DECK)
+        os.system('clear')
         print('Shuffling, get ready for the next hand....')
-        delay(6)
+        delay(2.5)
         os.system('clear')
         display_bankroll(HUMAN)
 
