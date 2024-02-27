@@ -1,5 +1,6 @@
 import random
 import os
+import time
 import pprint
 
 
@@ -19,10 +20,11 @@ def set_user_bankroll(human_dict):
         print('Please enter the amount of money you would like to start with.')
         money = input()
     
-    human_dict['bankroll'] = int(money)
+    human_dict['initial_bankroll'] = int(money)
+    human_dict['current_bankroll'] = int(money)
 
 def display_bankroll(human_dict):
-    print(f'Your current bankroll is ${human_dict['bankroll']}')
+    print(f'Your current bankroll is ${human_dict['current_bankroll']}')
 
 
 def get_bet(human_dict):
@@ -89,7 +91,7 @@ def display_hand(player_dict):
     if player_dict['player'] == 'HUMAN':
         player = 'You have:'
     else:
-        player = 'Dealer has:'
+        player = 'Dealer:'
 
     cards = (' '.join([f'{card['rank']}{card['symbol']}' for card in player_dict['cards']]))
     print(f'{player} {cards}')
@@ -107,9 +109,10 @@ def display_hand_value(player_dict):
 def bust(player_dict):
     MAX_VALUE = 21
     return player_dict['hand_value'] > MAX_VALUE
-    
 
 
+def delay(seconds):
+    time.sleep(seconds)
 
 def game():
     
@@ -172,7 +175,8 @@ def game():
         'cards': [],
         'hand_value': 0,
         'player': 'HUMAN',
-        'bankroll': 0,
+        'initial_bankroll': 0,
+        'current_bankroll': 0,
         'bet_amount': 0
     }
 
@@ -183,9 +187,13 @@ def game():
     }
 
     set_user_bankroll(HUMAN)
-    os.system('clear')
-    while HUMAN['bankroll'] > 0:
+
+    while HUMAN['current_bankroll'] > 0:
         get_bet(HUMAN)
+        os.system('clear')
+        display_bankroll(HUMAN)
+        display_bet(HUMAN)
+        print('')
         initial_deal(DECK, HUMAN, DEALER)
         update_hand_value(HUMAN)
         update_hand_value(DEALER)
@@ -195,7 +203,7 @@ def game():
 
         while True:
             print('')
-            hit_stay = input('Hit or Stay? ').lower().strip()
+            hit_stay = input('Do you want to hit or stay? ').lower().strip()
             while hit_stay not in ('hit', 'stay'):
                 hit_stay = input('Hit or Stay? ').lower().strip()
             
@@ -203,21 +211,35 @@ def game():
                 break
 
             os.system('clear')
-            deal_card(DECK, HUMAN)
+            display_bankroll(HUMAN)
             display_bet(HUMAN)
+            print('')
+            deal_card(DECK, HUMAN)
             display_dealer_up_card(DEALER)
+            delay(0.65)
             update_hand_value(HUMAN)
             display_hand(HUMAN)
             display_hand_value(HUMAN)
 
             if bust(HUMAN):
                 print('')
-                print('Player Bust!!!')
-                HUMAN['bankroll'] -= HUMAN['bet_amount']
-                display_bankroll(HUMAN)
+                print('Over 21!!!')
+                HUMAN['current_bankroll'] -= HUMAN['bet_amount']
                 print('Dealer cards were...')
                 display_hand(DEALER)
+                display_bankroll(HUMAN)
                 break
+        
+        while True:
+            if bust(HUMAN) or DEALER['hand_value'] >= 17:
+                break
+            print('Stay')
+            delay(1)
+            deal_card(DECK,DEALER)
+            update_hand_value(DEALER)
+            display_hand(DEALER)
+            display_hand_value(DEALER)
+
 
 
 
