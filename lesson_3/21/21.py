@@ -23,6 +23,7 @@ def set_user_bankroll(human_dict):
     human_dict['initial_bankroll'] = int(money)
     human_dict['current_bankroll'] = int(money)
 
+
 def display_bankroll(human_dict):
     print(f'Your current bankroll is ${human_dict['current_bankroll']}')
 
@@ -124,6 +125,13 @@ def clear_hands(human, dealer):
 def reset_deck(deck):
     for card in deck.values():
         card['in_deck'] = True
+    
+def recap_session(human_dict):
+    start = human_dict['initial_bankroll']
+    end = human_dict['current_bankroll']
+    print(f'You started this session with ${start} and left with ${end}')
+    print(f'You are {'up' if end > start else 'down'} ${abs(start - end)}')
+
 
 
 def game():
@@ -254,18 +262,17 @@ def game():
             display_hand_value(DEALER)
 
 
+        print('')
+        play_again = input('Do you want to keep playing? ( Y / N ) ').lower().strip()
 
-        while True:
-            print('')
+        while play_again not in ['y', 'n']:
             play_again = input('Do you want to keep playing? ( Y / N ) ').lower().strip()
-
-            while play_again not in ['y', 'n']:
-                play_again = input('Do you want to keep playing? ( Y / N ) ').lower().strip()
-            
-            if play_again == 'y':
-                clear_hands(HUMAN, DEALER)
-                reset_deck(DECK)
-                break
-
+        
+        if play_again == 'n':
+            recap_session(HUMAN)
+            break   
+        
+        clear_hands(HUMAN, DEALER)
+        reset_deck(DECK)
 
 game()
