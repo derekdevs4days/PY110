@@ -2,6 +2,7 @@ import random
 import os
 import pprint
 
+
 def valid_input(input):
     try:
         value = int(input)
@@ -21,7 +22,7 @@ def set_user_bankroll(human_dict):
     human_dict['bankroll'] = int(money)
 
 def display_bankroll(human_dict):
-    print(f'Your current bankroll is {human_dict['bankroll']}')
+    print(f'Your current bankroll is ${human_dict['bankroll']}')
 
 
 def get_bet(human_dict):
@@ -101,13 +102,16 @@ def display_hand_value(player_dict):
         player = "Dealer's hand value is:"
     
     print(f'{player} {player_dict['hand_value']}')
+
+
+def bust(player_dict):
+    MAX_VALUE = 21
+    return player_dict['hand_value'] > MAX_VALUE
     
 
 
 
 def game():
-    MAX_VALUE = 21
-    DEALER_MIN = 17
     
     DECK = {
         0: {'rank': '2', 'suit': 'Spades', 'value': 2, 'symbol': '♠', 'in_deck': True},
@@ -197,6 +201,7 @@ def game():
             
             if hit_stay == 'stay':
                 break
+
             os.system('clear')
             deal_card(DECK, HUMAN)
             display_bet(HUMAN)
@@ -204,6 +209,15 @@ def game():
             update_hand_value(HUMAN)
             display_hand(HUMAN)
             display_hand_value(HUMAN)
+
+            if bust(HUMAN):
+                print('')
+                print('Player Bust!!!')
+                HUMAN['bankroll'] -= HUMAN['bet_amount']
+                display_bankroll(HUMAN)
+                print('Dealer cards were...')
+                display_hand(DEALER)
+                break
 
 
 
