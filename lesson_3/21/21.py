@@ -114,6 +114,18 @@ def bust(player_dict):
 def delay(seconds):
     time.sleep(seconds)
 
+
+def clear_hands(human, dealer):
+    human['cards'].clear()
+    human['hand_value'] = 0
+    dealer['cards'].clear()
+    dealer['hand_value'] = 0
+
+def reset_deck(deck):
+    for card in deck.values():
+        card['in_deck'] = True
+
+
 def game():
     
     DECK = {
@@ -227,6 +239,7 @@ def game():
                 HUMAN['current_bankroll'] -= HUMAN['bet_amount']
                 print('Dealer cards were...')
                 display_hand(DEALER)
+                print('')
                 display_bankroll(HUMAN)
                 break
         
@@ -242,6 +255,17 @@ def game():
 
 
 
+        while True:
+            print('')
+            play_again = input('Do you want to keep playing? ( Y / N ) ').lower().strip()
+
+            while play_again not in ['y', 'n']:
+                play_again = input('Do you want to keep playing? ( Y / N ) ').lower().strip()
+            
+            if play_again == 'y':
+                clear_hands(HUMAN, DEALER)
+                reset_deck(DECK)
+                break
 
 
 game()
