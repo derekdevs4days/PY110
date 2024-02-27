@@ -1,42 +1,106 @@
 import random
 import pprint
 
+def valid_input(input):
+    try:
+        value = int(input)
+    except ValueError:
+        return False
+    
+    return value > 0
+
+
+def set_user_bankroll(human_dict):
+    money = input('How much money are you playing with? ')
+
+    while not valid_input(money):
+        print('Please enter the amount of money you would like to start with.')
+        money = input()
+    
+    human_dict['bankroll'] = int(money)
+
+
+def get_bet(human_dict):
+    amount = input('How much would you like to bet for this hand? ')
+
+    while not valid_input(amount):
+        print('Please enter the amount you would like to bet.')
+        amount = input()
+
+    human_dict['bet_amount'] = int(amount)
+
+
 def get_available_cards(deck):
     return [key for key, info in deck.items() if info['in_deck']]
 
 
-def deal_card(deck, player):
+def deal_card(deck, player_dict):
     available_cards = get_available_cards(deck)
     deck_key = random.choice(available_cards)
     random_card = deck[deck_key]
+
     deck[deck_key]['in_deck'] = False    
-    player['cards'].append(random_card)
+    player_dict['cards'].append(random_card)
 
 
 def initial_deal(deck, human, dealer):
     cards_to_be_dealt = 4
+
     while cards_to_be_dealt:
         if cards_to_be_dealt % 2 == 0:
             deal_card(deck, human)
         else:
             deal_card(deck, dealer)
+
         cards_to_be_dealt -= 1
 
 
-def update_hand_value(player):
+def update_hand_value(player_dict):
     value = 0
     aces = 0
-    for card in player['cards']:
+
+    for card in player_dict['cards']:
         value += card['value']
         if card['rank'] == 'A':
             aces += 1
+
     while value > 21 and aces:
         value -= 10
         aces -= 1
-    player['hand_value'] = value
+
+    player_dict['hand_value'] = value
+
+
+def display_dealer_up_card(dealer_dict):
+    up_card = dealer_dict['cards'][0]
+    print(f'Dealer has: {up_card['rank']}{up_card['symbol']} and unknown card')
+
+
+def display_hand(player_dict):
+    if player_dict['player'] == 'HUMAN':
+        player = 'You have:'
+    else:
+        player = 'Dealer has:'
+
+    cards = (' '.join([f'{card['rank']}{card['symbol']}' for card in player_dict['cards']]))
+    print(f'{player} {cards}')
+
+
+def display_hand_value(player_dict):
+    if player_dict['player'] == 'HUMAN':
+        player = 'Your hand value is'
+    else:
+        player = "Dealer's hand value is:"
+    
+    print(f'{player} {player_dict['hand_value']}')
+    
+
 
 
 def game():
+    MAX_VALUE = 21
+    DEALER_MIN = 17
+    
     DECK = {
         0: {'rank': '2', 'suit': 'Spades', 'value': 2, 'symbol': '♠', 'in_deck': True},
         1: {'rank': '2', 'suit': 'Hearts', 'value': 2, 'symbol': '♥', 'in_deck': True},
@@ -94,18 +158,33 @@ def game():
 
     HUMAN = {
         'cards': [],
-        'hand_value': 0
+        'hand_value': 0,
+        'player': 'HUMAN',
+        'bankroll': 0,
+        'bet_amount': 0
     }
 
     DEALER = {
         'cards': [],
-        'hand_value': 0
+        'hand_value': 0,
+        'player': 'DEALER',
     }
 
-    initial_deal(DECK, HUMAN, DEALER)
-    update_hand_value(HUMAN)
-    update_hand_value(DEALER)
-    pprint.pprint(HUMAN)
-    pprint.pprint(DEALER)
+    set_user_bankroll(HUMAN)
+
+    while HUMAN['bankroll'] > 0:
+        get_bet(HUMAN)
+        initial_deal(DECK, HUMAN, DEALER)
+        update_hand_value(HUMAN)
+        update_hand_value(DEALER)
+        display_dealer_up_card(DEALER)
+        display_hand(HUMAN)
+        display_hand_value(HUMAN)
+
+        while True:
+            
+        pprint.pprint(HUMAN)
+
+
 
 game()
