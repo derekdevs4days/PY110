@@ -100,7 +100,7 @@ def display_hand(player_dict):
 
 def display_hand_value(player_dict):
     if player_dict['player'] == 'HUMAN':
-        player = 'Your hand value is'
+        player = 'Your hand value is:'
     else:
         player = "Dealer's hand value is:"
     
@@ -130,7 +130,7 @@ def recap_session(human_dict):
     start = human_dict['initial_bankroll']
     end = human_dict['current_bankroll']
     print(f'You started this session with ${start} and left with ${end}')
-    print(f'You are {'up' if end > start else 'down'} ${abs(start - end)}')
+    print(f'You are {'up' if end >= start else 'down'} ${abs(start - end)}')
 
 
 
@@ -244,22 +244,50 @@ def game():
             if bust(HUMAN):
                 print('')
                 print('Over 21!!!')
-                HUMAN['current_bankroll'] -= HUMAN['bet_amount']
-                print('Dealer cards were...')
-                display_hand(DEALER)
+                print(f'You loss ${HUMAN["bet_amount"]}')
                 print('')
-                display_bankroll(HUMAN)
+                HUMAN['current_bankroll'] -= HUMAN['bet_amount']
                 break
         
         while True:
             if bust(HUMAN) or DEALER['hand_value'] >= 17:
+                print('Dealer stays.')
                 break
-            print('Stay')
-            delay(1)
+            
+            delay(.65)
+            os.system('clear')
+            display_bankroll(HUMAN)
+            display_bet(HUMAN)
+            print('')
+            display_hand(HUMAN)
+            display_hand_value(HUMAN)
+            print('')
+            print('Dealer decides to hit...')
+
             deal_card(DECK,DEALER)
             update_hand_value(DEALER)
             display_hand(DEALER)
             display_hand_value(DEALER)
+
+            if bust(DEALER):
+                print('')
+                print('Dealer busts!')
+                print(f'You won ${HUMAN["bet_amount"]}')
+                HUMAN['current_bankroll'] += HUMAN['bet_amount']
+                display_bankroll(HUMAN)
+
+        print('')
+        display_hand(DEALER)
+        display_hand_value(DEALER)
+        if HUMAN['hand_value'] > DEALER['hand_value']:
+            HUMAN['current_bankroll'] += HUMAN['bet_amount']
+            print(f'You won ${HUMAN["bet_amount"]}')
+            display_bankroll(HUMAN)
+        else:
+            print(f'You loss ${HUMAN["bet_amount"]}')
+            HUMAN['current_bankroll'] -= HUMAN['bet_amount']
+            display_bankroll(HUMAN)
+
 
 
         print('')
@@ -274,5 +302,9 @@ def game():
         
         clear_hands(HUMAN, DEALER)
         reset_deck(DECK)
+        print('Shuffling, get ready for the next hand....')
+        delay(6)
+        os.system('clear')
+        display_bankroll(HUMAN)
 
 game()
