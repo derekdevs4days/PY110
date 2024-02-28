@@ -32,9 +32,9 @@ def set_user_bankroll(human_dict):
     human_dict['current_bankroll'] = int(money)
 
 
-def get_bet(human_dict):
+def get_bet(human):
     amount = input('How much would you like to bet for this hand? ')
-    max_bet = human_dict['current_bankroll']
+    max_bet = human['current_bankroll']
 
     while not valid_bet(amount, max_bet):
         if not valid_input(amount):
@@ -43,28 +43,28 @@ def get_bet(human_dict):
             print(f'Please enter an amount up to: ${max_bet}')
         amount = input()
 
-    human_dict['bet_amount'] = int(amount)
+    human['bet_amount'] = int(amount)
 
 
-def display_bankroll(human_dict):
-    print(f'Your current bankroll is ${human_dict['current_bankroll']}')
+def display_bankroll(human):
+    print(f'Your current bankroll is ${human['current_bankroll']}')
 
 
-def display_bet(human_dict):
-    print(f'The current bet is ${human_dict['bet_amount']}')
+def display_bet(human):
+    print(f'The current bet is ${human['bet_amount']}')
 
 
 def get_available_cards(deck):
     return [key for key, info in deck.items() if info['in_deck']]
 
 
-def deal_card(deck, player_dict):
+def deal_card(deck, player):
     available_cards = get_available_cards(deck)
     deck_key = random.choice(available_cards)
     random_card = deck[deck_key]
 
     deck[deck_key]['in_deck'] = False
-    player_dict['cards'].append(random_card)
+    player['cards'].append(random_card)
 
 
 def initial_deal(deck, human, dealer):
@@ -79,11 +79,11 @@ def initial_deal(deck, human, dealer):
         cards_to_be_dealt -= 1
 
 
-def update_hand_value(player_dict):
+def update_hand_value(player):
     value = 0
     aces = 0
 
-    for card in player_dict['cards']:
+    for card in player['cards']:
         value += card['value']
         if card['rank'] == 'A':
             aces += 1
@@ -92,40 +92,81 @@ def update_hand_value(player_dict):
         value -= 10
         aces -= 1
 
-    player_dict['hand_value'] = value
+    player['hand_value'] = value
 
 
-def display_dealer_up_card(dealer_dict):
-    up_card = dealer_dict['cards'][0]
+def display_dealer_up_card(dealer):
+    up_card = dealer['cards'][0]
     print(f'Dealer has: {up_card['rank']}{up_card['symbol']} and unknown card')
 
 
-def display_hand(player_dict):
-    if player_dict['player'] == 'HUMAN':
-        player = 'You have:'
+def display_hand(player):
+    if player['player'] == 'HUMAN':
+        curr_player = 'You have:'
     else:
-        player = 'Dealer:'
+        curr_player = 'Dealer:'
 
     cards = ' '.join([f'{card['rank']}{card['symbol']}'
-                      for card in player_dict['cards']])
-    print(f'{player} {cards}')
+                      for card in player['cards']])
+    print(f'{curr_player} {cards}')
 
 
-def display_hand_value(player_dict):
-    if player_dict['player'] == 'HUMAN':
-        player = 'Your hand value is:'
+def display_hand_value(player):
+    if player['player'] == 'HUMAN':
+        curr_player = 'Your hand value is:'
     else:
-        player = "Dealer's hand value is:"
+        curr_player = "Dealer's hand value is:"
 
-    print(f'{player} {player_dict['hand_value']}')
+    print(f'{curr_player} {player['hand_value']}')
 
 
-def bust(player_dict):
-    return player_dict['hand_value'] > 21
+def bust(player):
+    return player['hand_value'] > 21
 
 
 def delay(seconds):
     time.sleep(seconds)
+
+
+def reset_deck(deck):
+    for card in deck.values():
+        card['in_deck'] = True
+
+
+def recap_session(human):
+    os.system('clear')
+    start = human['initial_bankroll']
+    end = human['current_bankroll']
+    print(f'You started this session with ${start} and left with ${end}')
+    print(f'You are {'up' if end >= start else 'down'} ${abs(start - end)}')
+
+
+def compare_hands(human, dealer):
+    if not bust(human) and not bust(dealer):
+        print('')
+        display_hand(dealer)
+        display_hand_value(dealer)
+        print('')
+        if human['hand_value'] > dealer['hand_value']:
+            human['current_bankroll'] += human['bet_amount']
+            print(f'You won ${human["bet_amount"]}')
+        elif human['hand_value'] < dealer['hand_value']:
+            human['current_bankroll'] -= human['bet_amount']
+            print(f'You lose ${human["bet_amount"]}')
+        else:
+            print('It is a push')
+        display_bankroll(human)
+
+
+def ask_play_again():
+    print('\nDo you want to keep playing? ( Y / N )')
+    play_again = input().lower().strip()
+
+    while play_again not in ['y', 'n']:
+        print('Enter Y or N ')
+        play_again = input().lower().strip()
+
+    return play_again == 'y'
 
 
 def clear_hands(human, dealer):
@@ -135,18 +176,42 @@ def clear_hands(human, dealer):
     dealer['hand_value'] = 0
 
 
-def reset_deck(deck):
-    for card in deck.values():
-        card['in_deck'] = True
+def prepare_for_next_hand(human, dealer, deck):
+    clear_hands(human, dealer)
+    reset_deck(deck)
+    os.system('clear')
+    print('Shuffling, get ready for the next hand....')
+    delay(2.2)
+    os.system('clear')
 
 
-def recap_session(human_dict):
-    start = human_dict['initial_bankroll']
-    end = human_dict['current_bankroll']
-    print(f'You started this session with ${start} and left with ${end}')
-    print(f'You are {'up' if end >= start else 'down'} ${abs(start - end)}')
+def display_bankroll_bet_on_top(human):
+    os.system('clear')
+    display_bankroll(human)
+    display_bet(human)
+    print('')
 
 
+def handle_human_bust(human, dealer):
+    print('')
+    print('Over 21!')
+    display_hand(dealer)
+    display_hand_value(dealer)
+    print('')
+    print(f'You lose ${human["bet_amount"]}')
+    human['current_bankroll'] -= human['bet_amount']
+    display_bankroll(human)
+
+
+def handle_dealer_bust(human, dealer):
+    print('')
+    print('Dealer busts!')
+    display_hand(dealer)
+    display_hand_value(dealer)
+    print('')
+    print(f'You win ${human["bet_amount"]}')
+    human['current_bankroll'] += human['bet_amount']
+    display_bankroll(human)
 
 
 def game():
@@ -222,12 +287,10 @@ def game():
 
     set_user_bankroll(human)
 
-    while human['current_bankroll'] > 0:
+    # Main Game Loop
+    while True:
         get_bet(human)
-        os.system('clear')
-        display_bankroll(human)
-        display_bet(human)
-        print('')
+        display_bankroll_bet_on_top(human)
         initial_deal(deck, human, dealer)
         update_hand_value(human)
         update_hand_value(dealer)
@@ -235,8 +298,12 @@ def game():
         display_hand(human)
         display_hand_value(human)
 
-
+        # Player Loop
         while True:
+            if bust(human):
+                handle_human_bust(human, dealer)
+                break
+
             print('')
             hit_stay = input('Do you want to hit or stay? ').lower().strip()
             while hit_stay not in ('hit', 'stay'):
@@ -245,93 +312,43 @@ def game():
             if hit_stay == 'stay':
                 break
 
-            os.system('clear')
-            display_bankroll(human)
-            display_bet(human)
-            print('')
+            display_bankroll_bet_on_top(human)
             deal_card(deck, human)
             display_dealer_up_card(dealer)
             update_hand_value(human)
             display_hand(human)
             display_hand_value(human)
 
-            if bust(human):
-                print('')
-                print('Over 21!')
-                display_hand(dealer)
-                display_hand_value(dealer)
-                print('')
-                print(f'You lose ${human["bet_amount"]}')
-                human['current_bankroll'] -= human['bet_amount']
-                display_bankroll(human)
-                break
-
-
+        # Dealer Loop
         while True:
             if bust(human) or dealer['hand_value'] >= 17:
                 break
 
-            os.system('clear')
-            display_bankroll(human)
-            display_bet(human)
-            print('')
+            display_bankroll_bet_on_top(human)
             display_hand(human)
             display_hand_value(human)
             print('')
             print('Dealer decides to hit...')
-
             deal_card(deck,dealer)
             update_hand_value(dealer)
 
             if bust(dealer):
-                print('')
-                print('Dealer busts!')
-                display_hand(dealer)
-                display_hand_value(dealer)
-                print('')
-                print(f'You win ${human["bet_amount"]}')
-                human['current_bankroll'] += human['bet_amount']
-                display_bankroll(human)
+                handle_dealer_bust(human, dealer)
 
 
+        compare_hands(human, dealer)
 
-        if not bust(human) and not bust(dealer):
-            print('')
-            display_hand(dealer)
-            display_hand_value(dealer)
-            print('')
-            if human['hand_value'] > dealer['hand_value']:
-                human['current_bankroll'] += human['bet_amount']
-                print(f'You won ${human["bet_amount"]}')
-                display_bankroll(human)
-            elif human['hand_value'] <  dealer['hand_value']:
-                print(f'You lose ${human["bet_amount"]}')
-                human['current_bankroll'] -= human['bet_amount']
-                display_bankroll(human)
-            else:
-                print('It is a push')
-                display_bankroll(human)
-
-
-        print('')
-        print('Do you want to keep playing? ( Y / N ) ')
-        play_again = input().lower().strip()
-
-        while play_again not in ['y', 'n']:
-            print('Enter Y or N ')
-            play_again = input().lower().strip()
-
-        if play_again == 'n':
-            os.system('clear')
+        if not ask_play_again():
             recap_session(human)
             break
 
-        clear_hands(human, dealer)
-        reset_deck(deck)
-        os.system('clear')
-        print('Shuffling, get ready for the next hand....')
-        delay(2.2)
-        os.system('clear')
+        if human['current_bankroll'] == 0:
+            print('You have no more money!')
+            delay(3)
+            recap_session(human)
+            break
+
+        prepare_for_next_hand(human, dealer, deck)
         display_bankroll(human)
 
 game()
