@@ -335,7 +335,6 @@ def game():
             if bust(dealer):
                 handle_dealer_bust(human, dealer)
 
-
         compare_hands(human, dealer)
 
         if not ask_play_again():
