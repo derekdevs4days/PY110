@@ -3,6 +3,16 @@ import os
 import time
 
 
+def display_instructions():
+    print('Welcome To Launch Casino!\n')
+    print("Goal: Get as close to 21 as possible without going over.")
+    print("Players start with two cards; one dealer card is hidden.")
+    print("Options: 'Hit' to add cards, 'Stay' to hold your total.")
+    print("Going over 21 is a 'bust', resulting in an automatic loss.")
+    print("Dealer hits until reaching 17 or higher.\n")
+    print("Good luck, and may the odds be in your favor!\n")
+
+
 def valid_input(user_input):
     try:
         value = int(user_input)
@@ -137,8 +147,8 @@ def recap_session(human):
     os.system('clear')
     start = human['initial_bankroll']
     end = human['current_bankroll']
-    print(f'You started this session with ${start} and left with ${end}')
-    print(f'You are {'up' if end >= start else 'down'} ${abs(start - end)}')
+    print(f'\nYou started this session with ${start} and left with ${end}')
+    print(f'You are {'up' if end >= start else 'down'} ${abs(start - end)}\n')
 
 
 def compare_hands(human, dealer):
@@ -285,6 +295,7 @@ def game():
         'player': 'DEALER',
     }
 
+    display_instructions()
     set_user_bankroll(human)
 
     # Main Game Loop
